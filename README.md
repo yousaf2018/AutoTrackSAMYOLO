@@ -1,4 +1,4 @@
-# 🎯 AutoTrackSamYOLO
+# AutoTrackSamYOLO
 ### Universal Object Tracking Pipeline: From Zero-Shot Annotation to YOLO Deployment
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
