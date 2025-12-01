@@ -30,6 +30,9 @@ graph LR
     G --> H[High-Throughput Analysis];
 
 ```
+
+![Tool Overview](https://github.com/yousaf2018/AutoTrackSamYOLO/blob/main/GUI.png)
+*A snapshot of the AutoTrackSAMYOLO interface*
 ## 🌟 Key Features
 
 ### 1. Hybrid One-Shot Detection
