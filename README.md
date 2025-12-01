@@ -133,7 +133,19 @@ SAM3_Results/
 ```
 ## 🤝 Contributing
 We welcome contributions! Whether it's support for new model architectures, UI improvements, or additional analytics features, please feel free to submit a Pull Request.
+---
 
+## Acknowledgements
+
+This application was developed in the **[Laboratory of Professor Chung-Der Hsiao](https://cdhsiao.weebly.com/pi-cv.html)** in collaboration with **Chung Yuan Christian University, Taiwan 🇹🇼**. Special credit and sincere gratitude are extended to **Professor Hsiao**, who shared his extensive research experience in biology and multiple domains, providing invaluable guidance and supervision throughout the development of this application.
+
+<p align="center">
+  <a href="https://www.cycu.edu.tw/">
+    <img src="https://raw.githubusercontent.com/yousaf2018/EthoGrid/main/images/cycu.jpg" alt="Chung Yuan Christian University Logo" width="250">
+  </a>
+</p>
+
+---
 ## 📜 Citation
 If you use **AutoTrackSamYOLO** in your work, please cite:
 
