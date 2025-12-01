@@ -14,7 +14,7 @@ Whether you are tracking cells in a petri dish, vehicles on a highway, athletes 
 
 Beyond serving as a smart tracker, the platform functions as a full **Dataset Factory**. It automatically converts trajectories and segmentations into training-ready **YOLO annotations**, allowing you to train custom detectors on your own data with minimal effort.
 
-Once trained, your YOLO models can be deployed on **EthoGrid** — a distributed, high-throughput analysis framework designed for large-scale, real-time inference workloads.  
+Once trained, your YOLO models can be deployed on **EthoGrid** a distributed, high-throughput analysis framework designed for large-scale, real-time inference workloads.  
 You can navigate to EthoGrid here: **[EthoGrid on GitHub](https://github.com/yousaf2018/EthoGrid)**.
 
 By pairing YOLO’s fast, real-time inference capabilities with EthoGrid’s scalable compute architecture, you can process massive volumes of video data in parallel achieving extremely high throughput suitable for laboratory automation, population-level animal behavior studies, continuous traffic monitoring, sports analytics, and any application requiring real-time, high-frame-rate processing.
