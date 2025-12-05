@@ -10,9 +10,18 @@
 <p align="center">
   <img src="https://github.com/yousaf2018/AutoTrackSamYOLO/blob/main/logo.png" alt="EthoGrid Logo" width="200">
 </p>
-Whether you are tracking **cells in a petri dish, vehicles on a highway, athletes on a field, or animals in the wild**, this tool solves the "Cold Start" problem. It leverages **Meta's Segment Anything Model 3 (SAM 3)** to semi-automatically label and track targets without requiring thousands of manual bounding boxes.
+Whether you are tracking microscopic living organisms, nano-scale particles, or complex biological systems in dense marine environments, this platform is purpose-built to handle extreme occlusion and crowded visual scenes. Traditional computer-vision pipelines struggle with overlapping targets, rapid motion, and scale variation, but this system eliminates the classic "Cold Start" problem. By combining Meta’s Segment Anything Model 3 (SAM 3) with lightweight user interaction, it can rapidly generate precise labels and track targets without requiring thousands of manually drawn bounding boxes. This enables researchers to solve highly complex detection and tracking challenges in environments where conventional tools fail — from plankton-rich marine ecosystems to dense microbial cultures under the microscope.
+****
 
-Beyond tracking, it serves as a **Dataset Factory**: automatically converting tracked data into training-ready **YOLO formats**, training custom models locally, and preparing your workflow for high-performance inference systems like **EthoGrid**.
+Beyond serving as a smart tracker, the platform functions as a full **Dataset Factory**. It automatically converts trajectories and segmentations into training-ready **YOLO annotations**, allowing you to train custom detectors on your own data with minimal effort.
+
+Once trained, your YOLO models can be deployed on **EthoGrid** a distributed, high-throughput analysis framework designed for large-scale, real-time inference workloads.  
+You can navigate to EthoGrid here: **[EthoGrid on GitHub](https://github.com/yousaf2018/EthoGrid)**.
+
+By pairing YOLO’s fast, real-time inference capabilities with EthoGrid’s scalable compute architecture, you can process massive volumes of video data in parallel achieving extremely high throughput suitable for laboratory automation, population-level animal behavior studies, continuous traffic monitoring, sports analytics, and any application requiring real-time, high-frame-rate processing.
+
+This pipeline — **SAM 3 for rapid annotation → YOLO for optimized detection → EthoGrid for massive-scale inference** provides an end-to-end solution for high-throughput, production-ready computer-vision analysis.
+
 
 ---
 
@@ -30,6 +39,9 @@ graph LR
     G --> H[High-Throughput Analysis];
 
 ```
+
+![Tool Overview](https://github.com/yousaf2018/AutoTrackSamYOLO/blob/main/GUI.png)
+*A snapshot of the AutoTrackSAMYOLO interface*
 ## 🌟 Key Features
 
 ### 1. Hybrid One-Shot Detection
