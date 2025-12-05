@@ -1,0 +1,68 @@
+[0m[32mINFO 2025-12-02 10:04:30,457 665784 sam3_video_base.py: 124:[0m setting max_num_objects=10000 and num_obj_for_compile=16
+propagate in video:   0%|          | 0/149 [00:00<?, ?it/s]propagate in video:   1%|          | 1/149 [00:00<00:16,  8.73it/s]propagate in video:   1%|1         | 2/149 [00:00<01:17,  1.89it/s]propagate in video:   2%|2         | 3/149 [00:01<01:50,  1.33it/s]propagate in video:   3%|2         | 4/149 [00:03<02:16,  1.06it/s]propagate in video:   3%|3         | 5/149 [00:04<02:41,  1.12s/it]propagate in video:   4%|4         | 6/149 [00:06<03:05,  1.30s/it]propagate in video:   5%|4         | 7/149 [00:08<03:30,  1.48s/it]propagate in video:   5%|5         | 8/149 [00:10<03:56,  1.68s/it]propagate in video:   6%|6         | 9/149 [00:12<04:12,  1.80s/it]propagate in video:   7%|6         | 10/149 [00:14<04:23,  1.89s/it]propagate in video:   7%|7         | 11/149 [00:16<04:29,  1.95s/it]propagate in video:   8%|8         | 12/149 [00:18<04:33,  2.00s/it]propagate in video:   9%|8         | 13/149 [00:20<04:34,  2.02s/it]propagate in video:   9%|9         | 14/149 [00:22<04:35,  2.04s/it]propagate in video:  10%|#         | 15/149 [00:24<04:35,  2.05s/it]propagate in video:  11%|#         | 16/149 [00:26<04:35,  2.07s/it]propagate in video:  11%|#1        | 17/149 [00:29<04:33,  2.07s/it]propagate in video:  12%|#2        | 18/149 [00:31<04:32,  2.08s/it]propagate in video:  13%|#2        | 19/149 [00:33<04:34,  2.11s/it]propagate in video:  13%|#3        | 20/149 [00:35<04:32,  2.11s/it]propagate in video:  14%|#4        | 21/149 [00:37<04:28,  2.10s/it]propagate in video:  15%|#4        | 22/149 [00:39<04:27,  2.10s/it]propagate in video:  15%|#5        | 23/149 [00:41<04:24,  2.10s/it]propagate in video:  16%|#6        | 24/149 [00:43<04:22,  2.10s/it]propagate in video:  17%|#6        | 25/149 [00:45<04:20,  2.10s/it]propagate in video:  17%|#7        | 26/149 [00:47<04:18,  2.10s/it]propagate in video:  18%|#8        | 27/149 [00:50<04:16,  2.10s/it]propagate in video:  19%|#8        | 28/149 [00:52<04:14,  2.10s/it]propagate in video:  19%|#9        | 29/149 [00:54<04:11,  2.10s/it]propagate in video:  20%|##        | 30/149 [00:56<04:10,  2.10s/it]propagate in video:  21%|##        | 31/149 [00:58<04:07,  2.10s/it]propagate in video:  21%|##1       | 32/149 [01:00<04:06,  2.10s/it]propagate in video:  22%|##2       | 33/149 [01:02<04:03,  2.10s/it]propagate in video:  23%|##2       | 34/149 [01:04<04:02,  2.11s/it]propagate in video:  23%|##3       | 35/149 [01:06<03:59,  2.10s/it]propagate in video:  24%|##4       | 36/149 [01:09<03:57,  2.11s/it]propagate in video:  25%|##4       | 37/149 [01:11<03:55,  2.10s/it]propagate in video:  26%|##5       | 38/149 [01:13<03:53,  2.10s/it]propagate in video:  26%|##6       | 39/149 [01:15<03:50,  2.10s/it]propagate in video:  27%|##6       | 40/149 [01:17<03:49,  2.10s/it]propagate in video:  28%|##7       | 41/149 [01:19<03:46,  2.10s/it]propagate in video:  28%|##8       | 42/149 [01:21<03:45,  2.10s/it]propagate in video:  29%|##8       | 43/149 [01:23<03:43,  2.10s/it]propagate in video:  30%|##9       | 44/149 [01:25<03:43,  2.12s/it]propagate in video:  30%|###       | 45/149 [01:28<03:42,  2.14s/it]propagate in video:  31%|###       | 46/149 [01:30<03:41,  2.15s/it]propagate in video:  32%|###1      | 47/149 [01:32<03:37,  2.14s/it]propagate in video:  32%|###2      | 48/149 [01:34<03:35,  2.13s/it]propagate in video:  33%|###2      | 49/149 [01:36<03:32,  2.12s/it]propagate in video:  34%|###3      | 50/149 [01:38<03:29,  2.12s/it]propagate in video:  34%|###4      | 51/149 [01:40<03:26,  2.11s/it]propagate in video:  35%|###4      | 52/149 [01:42<03:24,  2.11s/it]propagate in video:  36%|###5      | 53/149 [01:45<03:22,  2.11s/it]propagate in video:  36%|###6      | 54/149 [01:47<03:20,  2.11s/it]propagate in video:  37%|###6      | 55/149 [01:49<03:17,  2.10s/it]propagate in video:  38%|###7      | 56/149 [01:51<03:16,  2.11s/it]propagate in video:  38%|###8      | 57/149 [01:53<03:13,  2.10s/it]propagate in video:  39%|###8      | 58/149 [01:55<03:11,  2.11s/it]propagate in video:  40%|###9      | 59/149 [01:57<03:08,  2.10s/it]propagate in video:  40%|####      | 60/149 [01:59<03:06,  2.10s/it]propagate in video:  41%|####      | 61/149 [02:01<03:04,  2.09s/it]propagate in video:  42%|####1     | 62/149 [02:03<03:01,  2.09s/it]propagate in video:  42%|####2     | 63/149 [02:06<03:01,  2.12s/it]propagate in video:  43%|####2     | 64/149 [02:08<03:00,  2.12s/it]propagate in video:  44%|####3     | 65/149 [02:10<02:59,  2.13s/it]propagate in video:  44%|####4     | 66/149 [02:12<02:56,  2.12s/it]propagate in video:  45%|####4     | 67/149 [02:14<02:53,  2.11s/it]propagate in video:  46%|####5     | 68/149 [02:16<02:50,  2.10s/it]propagate in video:  46%|####6     | 69/149 [02:18<02:47,  2.10s/it]propagate in video:  47%|####6     | 70/149 [02:20<02:45,  2.09s/it]propagate in video:  48%|####7     | 71/149 [02:22<02:43,  2.09s/it]propagate in video:  48%|####8     | 72/149 [02:24<02:40,  2.09s/it]propagate in video:  49%|####8     | 73/149 [02:27<02:38,  2.09s/it]propagate in video:  50%|####9     | 74/149 [02:29<02:36,  2.09s/it]propagate in video:  50%|#####     | 75/149 [02:31<02:34,  2.09s/it]propagate in video:  51%|#####1    | 76/149 [02:33<02:34,  2.12s/it]propagate in video:  52%|#####1    | 77/149 [02:35<02:31,  2.11s/it]propagate in video:  52%|#####2    | 78/149 [02:37<02:29,  2.10s/it]propagate in video:  53%|#####3    | 79/149 [02:39<02:26,  2.10s/it]propagate in video:  54%|#####3    | 80/149 [02:41<02:24,  2.09s/it]propagate in video:  54%|#####4    | 81/149 [02:43<02:22,  2.09s/it]propagate in video:  55%|#####5    | 82/149 [02:45<02:19,  2.09s/it]propagate in video:  56%|#####5    | 83/149 [02:47<02:17,  2.09s/it]propagate in video:  56%|#####6    | 84/149 [02:50<02:15,  2.09s/it]propagate in video:  57%|#####7    | 85/149 [02:52<02:13,  2.09s/it]propagate in video:  58%|#####7    | 86/149 [02:54<02:11,  2.09s/it]propagate in video:  58%|#####8    | 87/149 [02:56<02:09,  2.09s/it]propagate in video:  59%|#####9    | 88/149 [02:58<02:07,  2.09s/it]propagate in video:  59%|#####9    | 88/149 [02:59<02:04,  2.04s/it]
+Traceback (most recent call last):
+  File "/mnt/Zebrafish_24TB/Mahmood-Yousaf-Data/AutoTrackSamYOLO/workers/pipeline_worker.py", line 145, in run
+    self.pipeline.process_video(video_path, progress_callback=update_progress)
+  File "/mnt/Zebrafish_24TB/Mahmood-Yousaf-Data/AutoTrackSamYOLO/core/sam_logic.py", line 158, in process_video
+    raise e
+  File "/mnt/Zebrafish_24TB/Mahmood-Yousaf-Data/AutoTrackSamYOLO/core/sam_logic.py", line 137, in process_video
+    final_m, next_p = self._track(cp, save_p, fps, prompts, i, f_chunk, csv_p, inner_cb)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/Mahmood-Yousaf-Data/AutoTrackSamYOLO/core/sam_logic.py", line 222, in _track
+    for fid, oids, _, msk, _ in self.predictor.propagate_in_video(st, start_frame_idx=0, max_frame_num_to_track=200, reverse=False, propagate_preflight=True):
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 57, in generator_context
+    response = gen.send(request)
+               ^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/sam3_tracking_predictor.py", line 849, in propagate_in_video
+    current_out, pred_masks = self._run_single_frame_inference(
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/sam3_tracking_predictor.py", line 1077, in _run_single_frame_inference
+    current_out = self.track_step(
+                  ^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/sam3_tracker_base.py", line 973, in track_step
+    pix_feat_with_mem = self._prepare_memory_conditioned_features(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/sam3_tracker_base.py", line 783, in _prepare_memory_conditioned_features
+    encoder_out = self.transformer.encoder(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/decoder.py", line 698, in forward
+    output = activation_ckpt_wrapper(layer)(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/act_ckpt_utils.py", line 86, in act_ckpt_wrapper
+    ret = module(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/decoder.py", line 955, in forward
+    return self.forward_pre(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/decoder.py", line 945, in forward_pre
+    tgt = self._forward_ca(tgt, memory, query_pos, pos, num_k_exclude_rope)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/decoder.py", line 910, in _forward_ca
+    tgt2 = self.cross_attn_image(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1751, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1762, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/sam/transformer.py", line 326, in forward
+    q, k[:, :, :num_k_rope] = apply_rotary_enc(
+                              ^^^^^^^^^^^^^^^^^
+  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/sam/rope.py", line 77, in apply_rotary_enc
+    xk_out = torch.view_as_real(xk_ * freqs_cis).flatten(3)
+                                ~~~~^~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 568.00 MiB. GPU 0 has a total capacity of 11.75 GiB of which 606.62 MiB is free. Including non-PyTorch memory, this process has 9.29 GiB memory in use. Of the allocated memory 8.84 GiB is allocated by PyTorch, and 152.06 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

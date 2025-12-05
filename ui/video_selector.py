@@ -35,10 +35,19 @@ class VideoSelectorWidget(QWidget):
         # Detected objects for preview (Cyan)
         self.detected_objects = []
 
+    def load_frame(self, frame_bgr):
+        """
+        Legacy/Simple wrapper for loading a frame without specific index context.
+        Used by DatasetWindow and Preview.
+        """
+        self.set_current_frame(0, frame_bgr)
+
     def set_current_frame(self, frame_idx, frame_bgr):
         """Updates the displayed frame and current index."""
         self.current_frame_idx = frame_idx
         
+        if frame_bgr is None: return
+
         h, w, ch = frame_bgr.shape
         bytes_per_line = ch * w
         rgb_frame = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
@@ -120,9 +129,6 @@ class VideoSelectorWidget(QWidget):
             rect = QRect(self.start_point, self.current_point).normalized()
             painter.drawRect(rect)
 
-        # NOTE: Text Overlay removed to keep frame clear. 
-        # Info is now shown in MainWindow labels.
-
     # --- Interaction ---
     def mousePressEvent(self, event):
         if not self.original_pixmap: return
@@ -194,7 +200,6 @@ class VideoSelectorWidget(QWidget):
                     
                     new_box = QRect(int(ox), int(oy), int(ow), int(oh))
                     
-                    # Initialize list if frame not key yet
                     if self.current_frame_idx not in self.annotations:
                         self.annotations[self.current_frame_idx] = []
                         
@@ -214,11 +219,8 @@ class VideoSelectorWidget(QWidget):
         if self.selected_index != -1 and self.selected_index < len(boxes):
             del boxes[self.selected_index]
             self.selected_index = -1
-            
-            # Cleanup empty frame keys
             if not boxes:
                 del self.annotations[self.current_frame_idx]
-                
             self.selection_changed.emit()
             self.update()
 

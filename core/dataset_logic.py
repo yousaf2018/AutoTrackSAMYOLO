@@ -31,55 +31,35 @@ class YoloDatasetGenerator:
         dataset_root = Path(self.config['output_dataset_dir'])
         box_size = self.config.get('box_size', 30)
         
-        # 1. Collect Info
-        self.log("Scanning files...")
+        # 1. Scan again to be safe (logic reused from UI scan essentially)
         video_files = sorted([p for p in raw_videos_dir.iterdir() if p.suffix.lower() in [".mp4", ".avi", ".mov", ".mkv"]])
-        
-        if not video_files:
-            raise Exception("No videos found in Raw Video Directory.")
-
         video_info = {}
         
+        if self.progress_signal: self.progress_signal.emit(0, "Scanning files...")
+
         for v in video_files:
             if self.stop_flag: return
+            # Try finding CSV in Run_* subfolders
+            csv_path = None
+            # Recursively find CSV matching video name
+            for root, _, files in os.walk(result_dir):
+                target = f"{v.stem}_data.csv"
+                if target in files:
+                    csv_path = Path(root) / target
+                    break
             
-            # Look for folder matching video name
-            sub = result_dir / v.stem
-            # Also try checking if folder starts with Run_ and contains the csv
-            if not sub.exists():
-                # Search for any folder inside result_dir containing {v.stem}_data.csv
-                found = False
-                for run_folder in result_dir.glob("Run_*"):
-                    if (run_folder / f"{v.stem}_data.csv").exists():
-                        sub = run_folder
-                        found = True
-                        break
-                if not found:
-                    self.log(f"Skipping {v.name}: No result folder/CSV found.")
-                    continue
+            if csv_path:
+                try:
+                    df = pd.read_csv(csv_path)
+                    df_sorted = df.sort_values("Global_Frame_ID").reset_index(drop=True)
+                    dets_by_frame = defaultdict(list)
+                    for _, row in df_sorted.iterrows():
+                        dets_by_frame[int(row["Global_Frame_ID"])].append(row)
+                    
+                    video_info[v] = { "csv": csv_path, "data": dets_by_frame, "frames": sorted(dets_by_frame.keys()) }
+                except: pass
 
-            csv_files = list(sub.glob("*_data.csv"))
-            if not csv_files: continue
-            csv_path = csv_files[0]
-
-            try:
-                df = pd.read_csv(csv_path)
-                df_sorted = df.sort_values("Global_Frame_ID").reset_index(drop=True)
-                
-                dets_by_frame = defaultdict(list)
-                for _, row in df_sorted.iterrows():
-                    fid = int(row["Global_Frame_ID"])
-                    dets_by_frame[fid].append(row)
-                
-                video_info[v] = {
-                    "csv_path": csv_path,
-                    "dets_by_frame": dets_by_frame,
-                    "frames": sorted(dets_by_frame.keys())
-                }
-                self.log(f"Loaded {v.name}: {len(dets_by_frame)} annotated frames.")
-                
-            except Exception as e:
-                self.log(f"Error reading CSV for {v.name}: {e}")
+        if not video_info: raise Exception("No matched data found.")
 
         # 2. Sampling
         all_pairs = []
@@ -87,17 +67,11 @@ class YoloDatasetGenerator:
             for fid in info["frames"]:
                 all_pairs.append((v_path, fid))
 
-        total_frames = len(all_pairs)
-        self.log(f"Total detected frames available: {total_frames}")
-        
-        if total_frames == 0:
-            raise Exception("No detections found in any CSV files.")
-
         rng = random.Random(self.config['seed'])
         rng.shuffle(all_pairs)
         
         max_f = self.config['max_frames']
-        sampled = all_pairs[:max_f] if max_f < total_frames else all_pairs
+        sampled = all_pairs[:max_f] if max_f < len(all_pairs) else all_pairs
         
         # 3. Split
         n = len(sampled)
@@ -107,90 +81,44 @@ class YoloDatasetGenerator:
         train_set = set(sampled[:n_train])
         val_set = set(sampled[n_train:n_train+n_val])
         test_set = set(sampled[n_train+n_val:])
-        
-        self.log(f"Split: Train={len(train_set)}, Val={len(val_set)}, Test={len(test_set)}")
 
         # 4. Export
         self.create_dirs(dataset_root)
-        
-        # Map for O(1) lookup
-        split_map = {}
-        for p in train_set: split_map[p] = "train"
-        for p in val_set: split_map[p] = "val"
-        for p in test_set: split_map[p] = "test"
+        split_map = {**{p:"train" for p in train_set}, **{p:"val" for p in val_set}, **{p:"test" for p in test_set}}
 
-        processed_count = 0
-        
+        processed = 0
         for v_path, info in video_info.items():
             if self.stop_flag: return
-            self.log(f"Processing video: {v_path.name}")
-            
             cap = cv2.VideoCapture(str(v_path))
-            if not cap.isOpened(): continue
+            fw = int(cap.get(3)); fh = int(cap.get(4))
             
-            fw = int(cap.get(3))
-            fh = int(cap.get(4))
-            total_v_frames = int(cap.get(7))
-            
-            # Optional: Annotated video output
-            # result_sub = info["csv_path"].parent
-            # out_vid = cv2.VideoWriter(str(result_sub / "yolo_debug.mp4"), 
-            #                           cv2.VideoWriter_fourcc(*'mp4v'), 30, (fw, fh))
-
-            dets_map = info['dets_by_frame']
             f_idx = 0
-            
             while True:
                 ret, frame = cap.read()
                 if not ret: break
                 
-                pair_key = (v_path, f_idx)
-                
-                # Only save if in sampled set
-                if pair_key in split_map:
-                    split_name = split_map[pair_key]
+                if (v_path, f_idx) in split_map:
+                    split = split_map[(v_path, f_idx)]
+                    base = f"{v_path.stem}_f{f_idx:06d}"
                     
-                    # Filenames
-                    base_name = f"{v_path.stem}_f{f_idx:06d}"
-                    img_out = dataset_root / split_name / "images" / f"{base_name}.jpg"
-                    lbl_out = dataset_root / split_name / "labels" / f"{base_name}.txt"
+                    cv2.imwrite(str(dataset_root / split / "images" / f"{base}.jpg"), frame)
                     
-                    cv2.imwrite(str(img_out), frame)
-                    
-                    # Write Labels
-                    with open(lbl_out, 'w') as lf:
-                        dets = dets_map.get(f_idx, [])
-                        for r in dets:
+                    with open(dataset_root / split / "labels" / f"{base}.txt", 'w') as f:
+                        for r in info['data'][f_idx]:
                             cx, cy = float(r["Centroid_X"]), float(r["Centroid_Y"])
                             xn, yn, wn, hn = self.normalize_bbox(cx, cy, box_size, box_size, fw, fh)
-                            # Class 0 for object
-                            lf.write(f"0 {self.clamp(xn,0,1):.6f} {self.clamp(yn,0,1):.6f} {self.clamp(wn,0,1):.6f} {self.clamp(hn,0,1):.6f}\n")
+                            f.write(f"0 {self.clamp(xn,0,1):.6f} {self.clamp(yn,0,1):.6f} {self.clamp(wn,0,1):.6f} {self.clamp(hn,0,1):.6f}\n")
                     
-                    processed_count += 1
-                    if self.progress_signal:
-                        pct = int((processed_count / n) * 100)
-                        self.progress_signal.emit(pct, f"Exporting {split_name}...")
-
+                    processed += 1
+                    if self.progress_signal: self.progress_signal.emit(int(processed/n*100), f"Processing {split}...")
                 f_idx += 1
-                
             cap.release()
-        
-        # Write YAML
-        yaml_content = {
-            'path': str(dataset_root.absolute()),
-            'train': 'train/images',
-            'val': 'val/images',
-            'test': 'test/images',
-            'nc': 1,
-            'names': ['particle']
-        }
-        
-        with open(dataset_root / "data.yaml", 'w') as f:
-            yaml.dump(yaml_content, f)
-            
-        self.log(f"Success! Dataset created at {dataset_root}")
 
-    def create_dirs(self, root):
+        # YAML
+        y = {'path': str(dataset_root.absolute()), 'train': 'train/images', 'val': 'val/images', 'test': 'test/images', 'nc': 1, 'names': ['particle']}
+        with open(dataset_root/"data.yaml", 'w') as f: yaml.dump(y, f)
+
+    def create_dirs(self, r):
         for s in ['train', 'val', 'test']:
-            (root / s / "images").mkdir(parents=True, exist_ok=True)
-            (root / s / "labels").mkdir(parents=True, exist_ok=True)
+            (r/s/"images").mkdir(parents=True, exist_ok=True)
+            (r/s/"labels").mkdir(parents=True, exist_ok=True)
