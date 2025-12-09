@@ -1,25 +1,0 @@
---- Logging error ---
-Traceback (most recent call last):
-  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/logging/__init__.py", line 1164, in emit
-    self.flush()
-  File "/home/mahmood-yousaf/anaconda3/envs/sam3/lib/python3.12/logging/__init__.py", line 1144, in flush
-    self.stream.flush()
-  File "/mnt/Zebrafish_24TB/Mahmood-Yousaf-Data/AutoTrackSamYOLO/workers/pipeline_worker.py", line 39, in flush
-    self.file.flush()
-ValueError: I/O operation on closed file.
-Call stack:
-  File "/mnt/Zebrafish_24TB/Mahmood-Yousaf-Data/AutoTrackSamYOLO/workers/pipeline_worker.py", line 99, in run
-    self.pipeline.load_model()
-  File "/mnt/Zebrafish_24TB/Mahmood-Yousaf-Data/AutoTrackSamYOLO/core/sam_logic.py", line 52, in load_model
-    self.model = build_sam3_video_model()
-  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model_builder.py", line 716, in build_sam3_video_model
-    model = Sam3VideoInferenceWithInstanceInteractivity(
-  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/sam3_video_inference.py", line 977, in __init__
-    super().__init__(**kwargs)
-  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/sam3_video_inference.py", line 47, in __init__
-    super().__init__(**kwargs)
-  File "/mnt/Zebrafish_24TB/SAM3-Development/sam3/sam3/model/sam3_video_base.py", line 124, in __init__
-    logger.info(f"setting {max_num_objects=} and {num_obj_for_compile=}")
-Message: 'setting max_num_objects=10000 and num_obj_for_compile=16'
-Arguments: ()
-propagate in video:   0%|          | 0/149 [00:00<?, ?it/s]propagate in video:   1%|          | 1/149 [00:00<00:16,  8.72it/s]propagate in video:   1%|1         | 2/149 [00:00<01:19,  1.85it/s]propagate in video:   2%|2         | 3/149 [00:01<01:52,  1.30it/s]propagate in video:   3%|2         | 4/149 [00:03<02:19,  1.04it/s]propagate in video:   3%|3         | 5/149 [00:04<02:44,  1.14s/it]propagate in video:   4%|4         | 6/149 [00:06<03:09,  1.32s/it]propagate in video:   5%|4         | 7/149 [00:08<03:33,  1.51s/it]propagate in video:   5%|5         | 8/149 [00:10<03:59,  1.70s/it]
