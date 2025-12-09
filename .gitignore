@@ -1,0 +1,50 @@
+# --- Python & Bytecode ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Virtual Environments ---
+# Common names for local envs
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# --- Project Outputs (IMPORTANT) ---
+# Ignore all generated results and datasets
+SAM3_Results/
+YOLO_Dataset/
+YOLO_Training_Runs/
+runs/
+
+# --- Temporary/Processed Video Data ---
+# Ignore split chunks and processed videos if they leak outside output folders
+*/temp_chunks/
+*/processed_chunks/
+*_tracked.mp4
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Model Weights ---
+# Prevent pushing large model files (unless intended)
+*.pt
+*.pth
+*.onnx
+# Exception: Keep yolov8n.pt if you want to include a tiny base model
+# !yolov8n.pt
+
+# --- IDE & System ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- SAM3 Local Clone ---
+# If you cloned sam3 inside this folder, ignore it (it should be a separate repo)
+# sam3/

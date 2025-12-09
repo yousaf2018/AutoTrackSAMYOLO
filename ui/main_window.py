@@ -693,59 +693,74 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Error", f"Failed to load: {e}")
 
     def start_analysis(self):
-        active = []
-        for i in range(self.list_videos.count()):
-            if self.list_videos.item(i).checkState() == Qt.CheckState.Checked:
-                active.append(self.list_videos.item(i).data(Qt.ItemDataRole.UserRole))
-        
-        if not active: 
-            QMessageBox.warning(self, "Error", "No videos selected.")
-            return
-        
-        # Correctly fetch annotations as dictionary {frame_idx: [boxes]}
-        templates_dict = self.video_selector.annotations
-        if not templates_dict:
-             if QMessageBox.question(self, "No Templates", "Proceed with FULL SCAN?", QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No) == QMessageBox.StandardButton.No: return
-             templates_dict = {} # Handle as empty if user says yes
+            # 1. Collect Selected Videos
+            active = []
+            for i in range(self.list_videos.count()):
+                if self.list_videos.item(i).checkState() == Qt.CheckState.Checked:
+                    active.append(self.list_videos.item(i).data(Qt.ItemDataRole.UserRole))
+            
+            if not active: 
+                QMessageBox.warning(self, "Error", "No videos selected.")
+                return
+            
+            # 2. Collect Annotations (Dictionary: {frame_idx: [boxes]})
+            templates_dict = self.video_selector.annotations
+            if not templates_dict:
+                if QMessageBox.question(self, "No Templates", "Proceed with FULL SCAN?", 
+                                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.No: 
+                    return
+                templates_dict = {} # Handle as empty if user says yes
 
-        sam_path_val = self.line_sam_path.text()
-        if not os.path.exists(sam_path_val):
-            QMessageBox.critical(self, "Error", f"Local SAM3 path missing:\n{sam_path_val}")
-            return
+            # 3. Validate SAM Path
+            sam_path_val = self.line_sam_path.text()
+            if not os.path.exists(sam_path_val):
+                QMessageBox.critical(self, "Error", f"Local SAM3 path missing:\n{sam_path_val}")
+                return
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        final_out = os.path.join(self.output_dir, f"Run_{timestamp}")
-        os.makedirs(final_out, exist_ok=True)
+            # 4. CRITICAL: Cleanup Previous Worker (Prevents Re-run Crash)
+            if self.worker is not None:
+                if self.worker.isRunning():
+                    QMessageBox.warning(self, "Busy", "Analysis is currently running. Please Stop it first.")
+                    return
+                self.worker.deleteLater()
+                self.worker = None
 
-        self.set_ui_processing(True)
-        self.progress_bar.setValue(0)
-        self.text_log_app.clear()
-        self.text_log_sys.clear()
-        
-        config = {
-            "match_threshold": self.spin_threshold.value(),
-            "pixel_scale_um": self.spin_pixel_scale.value(),
-            "batch_size": self.spin_batch.value(),
-            "chunk_duration": self.spin_chunk.value(),
-            "sam_path": sam_path_val,
-            "save_video": self.chk_video.isChecked(),
-            "save_csv": self.chk_csv.isChecked(),
-            "save_heatmap": self.chk_heatmap.isChecked(),
-            "save_traj": self.chk_traj.isChecked(),
-            "save_hist": self.chk_hist.isChecked(),
-            "fast_mode": not self.chk_video.isChecked(),
-            "manual_mode": self.chk_manual_mode.isChecked()
-        }
-        
-        self.worker = AnalysisWorker(active, templates_dict, final_out, config)
-        self.worker.log_app_signal.connect(self.update_app_log)
-        self.worker.log_sys_signal.connect(self.update_sys_log)
-        self.worker.progress_signal.connect(lambda v, m: (self.progress_bar.setValue(v), self.progress_bar.setFormat(f"{v}% - {m}")))
-        self.worker.stats_signal.connect(self.update_stats)
-        self.worker.error_signal.connect(self.handle_error)
-        self.worker.finished_signal.connect(self.analysis_finished)
-        self.worker.start()
+            # 5. Prepare Output Directory
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            final_out = os.path.join(self.output_dir, f"Run_{timestamp}")
+            os.makedirs(final_out, exist_ok=True)
 
+            # 6. Reset UI State
+            self.set_ui_processing(True)
+            self.progress_bar.setValue(0)
+            self.text_log_app.clear()
+            self.text_log_sys.clear()
+            
+            # 7. Build Configuration
+            config = {
+                "match_threshold": self.spin_threshold.value(),
+                "pixel_scale_um": self.spin_pixel_scale.value(),
+                "batch_size": self.spin_batch.value(),
+                "chunk_duration": self.spin_chunk.value(),
+                "sam_path": sam_path_val,
+                "save_video": self.chk_video.isChecked(),
+                "save_csv": self.chk_csv.isChecked(),
+                "save_heatmap": self.chk_heatmap.isChecked(),
+                "save_traj": self.chk_traj.isChecked(),
+                "save_hist": self.chk_hist.isChecked(),
+                "fast_mode": not self.chk_video.isChecked(),
+                "manual_mode": self.chk_manual_mode.isChecked()
+            }
+            
+            # 8. Start New Worker
+            self.worker = AnalysisWorker(active, templates_dict, final_out, config)
+            self.worker.log_app_signal.connect(self.update_app_log)
+            self.worker.log_sys_signal.connect(self.update_sys_log)
+            self.worker.progress_signal.connect(lambda v, m: (self.progress_bar.setValue(v), self.progress_bar.setFormat(f"{v}% - {m}")))
+            self.worker.stats_signal.connect(self.update_stats)
+            self.worker.error_signal.connect(self.handle_error)
+            self.worker.finished_signal.connect(self.analysis_finished)
+            self.worker.start()
     def stop_analysis(self):
         if self.worker: 
             self.update_app_log("Stopping...")

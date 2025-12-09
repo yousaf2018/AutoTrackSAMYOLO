@@ -22,16 +22,18 @@ class YoloDatasetGenerator:
     def clamp(self, v, lo, hi):
         return max(lo, min(hi, v))
 
-    def normalize_bbox(self, cx, cy, w, h, frame_w, frame_h):
-        return (cx / frame_w, cy / frame_h, w / frame_w, h / frame_h)
-
     def run(self):
         raw_videos_dir = Path(self.config['raw_video_dir'])
         result_dir = Path(self.config['sam_results_dir'])
         dataset_root = Path(self.config['output_dataset_dir'])
-        box_size = self.config.get('box_size', 30)
         
-        # 1. Scan again to be safe (logic reused from UI scan essentially)
+        dataset_type = self.config.get('dataset_type', 'Detection') # 'Detection' or 'Segmentation'
+        class_names = self.config.get('class_names', ['object'])
+        
+        self.log(f"Starting {dataset_type} Dataset Generation...")
+        self.log(f"Classes: {class_names}")
+
+        # 1. Scan and Match Files
         video_files = sorted([p for p in raw_videos_dir.iterdir() if p.suffix.lower() in [".mp4", ".avi", ".mov", ".mkv"]])
         video_info = {}
         
@@ -39,9 +41,9 @@ class YoloDatasetGenerator:
 
         for v in video_files:
             if self.stop_flag: return
-            # Try finding CSV in Run_* subfolders
+            
+            # Find corresponding CSV
             csv_path = None
-            # Recursively find CSV matching video name
             for root, _, files in os.walk(result_dir):
                 target = f"{v.stem}_data.csv"
                 if target in files:
@@ -51,17 +53,18 @@ class YoloDatasetGenerator:
             if csv_path:
                 try:
                     df = pd.read_csv(csv_path)
-                    df_sorted = df.sort_values("Global_Frame_ID").reset_index(drop=True)
+                    # Group data by frame
                     dets_by_frame = defaultdict(list)
-                    for _, row in df_sorted.iterrows():
+                    for _, row in df.iterrows():
                         dets_by_frame[int(row["Global_Frame_ID"])].append(row)
                     
                     video_info[v] = { "csv": csv_path, "data": dets_by_frame, "frames": sorted(dets_by_frame.keys()) }
-                except: pass
+                except Exception as e: 
+                    self.log(f"Error reading {csv_path}: {e}")
 
-        if not video_info: raise Exception("No matched data found.")
+        if not video_info: raise Exception("No matched Video/CSV pairs found.")
 
-        # 2. Sampling
+        # 2. Sampling Logic
         all_pairs = []
         for v_path, info in video_info.items():
             for fid in info["frames"]:
@@ -82,13 +85,16 @@ class YoloDatasetGenerator:
         val_set = set(sampled[n_train:n_train+n_val])
         test_set = set(sampled[n_train+n_val:])
 
-        # 4. Export
+        # 4. Generate Dataset
         self.create_dirs(dataset_root)
         split_map = {**{p:"train" for p in train_set}, **{p:"val" for p in val_set}, **{p:"test" for p in test_set}}
 
         processed = 0
+        total_to_process = len(sampled)
+
         for v_path, info in video_info.items():
             if self.stop_flag: return
+            
             cap = cv2.VideoCapture(str(v_path))
             fw = int(cap.get(3)); fh = int(cap.get(4))
             
@@ -97,28 +103,118 @@ class YoloDatasetGenerator:
                 ret, frame = cap.read()
                 if not ret: break
                 
+                # If this frame is in our random sample
                 if (v_path, f_idx) in split_map:
                     split = split_map[(v_path, f_idx)]
-                    base = f"{v_path.stem}_f{f_idx:06d}"
+                    base_name = f"{v_path.stem}_f{f_idx:06d}"
                     
-                    cv2.imwrite(str(dataset_root / split / "images" / f"{base}.jpg"), frame)
+                    # Save Image
+                    img_out = dataset_root / split / "images" / f"{base_name}.jpg"
+                    cv2.imwrite(str(img_out), frame)
                     
-                    with open(dataset_root / split / "labels" / f"{base}.txt", 'w') as f:
-                        for r in info['data'][f_idx]:
-                            cx, cy = float(r["Centroid_X"]), float(r["Centroid_Y"])
-                            xn, yn, wn, hn = self.normalize_bbox(cx, cy, box_size, box_size, fw, fh)
-                            f.write(f"0 {self.clamp(xn,0,1):.6f} {self.clamp(yn,0,1):.6f} {self.clamp(wn,0,1):.6f} {self.clamp(hn,0,1):.6f}\n")
+                    # Save Labels
+                    lbl_out = dataset_root / split / "labels" / f"{base_name}.txt"
+                    
+                    with open(lbl_out, 'w') as f:
+                        rows = info['data'][f_idx]
+                        for r in rows:
+                            # Default class 0, or logic to map Object_ID to class if needed
+                            # Here we assume all tracked objects are the same class 0
+                            class_id = 0 
+                            
+                            poly_str = str(r.get("Polygon_Coords", ""))
+                            
+                            if dataset_type == "Segmentation":
+                                label_line = self.format_segmentation(poly_str, class_id, fw, fh)
+                            else:
+                                # Detection: Calculate BBox from Polygon or Centroid
+                                label_line = self.format_detection(r, poly_str, class_id, fw, fh)
+                            
+                            if label_line:
+                                f.write(label_line + "\n")
                     
                     processed += 1
-                    if self.progress_signal: self.progress_signal.emit(int(processed/n*100), f"Processing {split}...")
+                    if self.progress_signal: 
+                        self.progress_signal.emit(int(processed/total_to_process*100), f"Generating {split} set...")
+                
                 f_idx += 1
             cap.release()
 
-        # YAML
-        y = {'path': str(dataset_root.absolute()), 'train': 'train/images', 'val': 'val/images', 'test': 'test/images', 'nc': 1, 'names': ['particle']}
-        with open(dataset_root/"data.yaml", 'w') as f: yaml.dump(y, f)
+        # 5. Write data.yaml
+        yaml_content = {
+            'path': str(dataset_root.absolute()),
+            'train': 'train/images',
+            'val': 'val/images',
+            'test': 'test/images',
+            'nc': len(class_names),
+            'names': class_names
+        }
+        with open(dataset_root/"data.yaml", 'w') as f: yaml.dump(yaml_content, f)
+            
+        self.log(f"Success! {dataset_type} Dataset created at {dataset_root}")
 
-    def create_dirs(self, r):
+    def format_segmentation(self, poly_str, class_id, fw, fh):
+        """Converts pixel polygon string to YOLO normalized polygon line."""
+        if not poly_str or poly_str == "nan": return None
+        
+        points = poly_str.split(';')
+        norm_coords = []
+        
+        for p in points:
+            if ',' not in p: continue
+            px, py = map(float, p.split(','))
+            nx = self.clamp(px / fw, 0.0, 1.0)
+            ny = self.clamp(py / fh, 0.0, 1.0)
+            norm_coords.extend([f"{nx:.6f}", f"{ny:.6f}"])
+            
+        if len(norm_coords) < 6: return None # Need at least 3 points
+        
+        return f"{class_id} " + " ".join(norm_coords)
+
+    def format_detection(self, row, poly_str, class_id, fw, fh):
+        """Calculates Bounding Box (XYWH Normalized) from Polygon or Centroid."""
+        
+        # Try calculating tight box from polygon first
+        if poly_str and poly_str != "nan":
+            points = poly_str.split(';')
+            x_vals = []
+            y_vals = []
+            for p in points:
+                if ',' not in p: continue
+                px, py = map(float, p.split(','))
+                x_vals.append(px)
+                y_vals.append(py)
+            
+            if x_vals:
+                min_x, max_x = min(x_vals), max(x_vals)
+                min_y, max_y = min(y_vals), max(y_vals)
+                
+                width = max_x - min_x
+                height = max_y - min_y
+                center_x = min_x + (width / 2)
+                center_y = min_y + (height / 2)
+                
+                # Normalize
+                n_cx = self.clamp(center_x / fw, 0, 1)
+                n_cy = self.clamp(center_y / fh, 0, 1)
+                n_w = self.clamp(width / fw, 0, 1)
+                n_h = self.clamp(height / fh, 0, 1)
+                
+                return f"{class_id} {n_cx:.6f} {n_cy:.6f} {n_w:.6f} {n_h:.6f}"
+
+        # Fallback: Fixed Box Size around Centroid
+        cx = float(row["Centroid_X"])
+        cy = float(row["Centroid_Y"])
+        box_size = self.config.get('box_size', 50)
+        
+        n_cx = self.clamp(cx / fw, 0, 1)
+        n_cy = self.clamp(cy / fh, 0, 1)
+        n_w = self.clamp(box_size / fw, 0, 1)
+        n_h = self.clamp(box_size / fh, 0, 1)
+        
+        return f"{class_id} {n_cx:.6f} {n_cy:.6f} {n_w:.6f} {n_h:.6f}"
+
+    def create_dirs(self, root):
         for s in ['train', 'val', 'test']:
-            (r/s/"images").mkdir(parents=True, exist_ok=True)
-            (r/s/"labels").mkdir(parents=True, exist_ok=True)
+            (root / s / "images").mkdir(parents=True, exist_ok=True)
+            (root / s / "labels").mkdir(parents=True, exist_ok=True)

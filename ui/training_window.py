@@ -2,7 +2,7 @@ import os
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, 
     QLineEdit, QPushButton, QSpinBox, QComboBox, 
-    QGroupBox, QTextEdit, QMessageBox, QLabel, QFileDialog  # <--- Added QFileDialog here
+    QGroupBox, QTextEdit, QMessageBox, QLabel, QFileDialog
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from workers.yolo_workers import TrainingWorker
@@ -14,7 +14,13 @@ class TrainingWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("YOLO Model Trainer")
-        self.resize(900, 700)
+        self.resize(900, 750)
+        
+        # Default Output Path
+        self.default_run_dir = os.path.join(os.getcwd(), "YOLO_Training_Runs")
+        if not os.path.exists(self.default_run_dir):
+            os.makedirs(self.default_run_dir)
+            
         self.setup_ui()
         self.worker = None
 
@@ -52,43 +58,62 @@ class TrainingWindow(QMainWindow):
         form = QFormLayout()
         form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
         
+        # Data YAML
         self.path_data = QLineEdit()
         self.path_data.setPlaceholderText("Path to data.yaml (inside generated dataset folder)")
         self.path_data.setStyleSheet("background-color: #1e1e1e; color: #ddd; padding: 8px; border: 1px solid #444;")
         
-        self.btn_data = QPushButton("Browse data.yaml")
+        self.btn_data = QPushButton("Browse")
         self.btn_data.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_data.setStyleSheet("background-color: #0d6efd; color: white; padding: 5px;")
         self.btn_data.clicked.connect(self.browse_yaml)
         
-        data_layout = QHBoxLayout()
-        data_layout.addWidget(self.path_data)
-        data_layout.addWidget(self.btn_data)
-        form.addRow("Dataset YAML:", data_layout)
+        # Output Runs Directory (NEW)
+        self.path_out = QLineEdit(self.default_run_dir)
+        self.path_out.setPlaceholderText("Where to save the trained model?")
+        self.path_out.setStyleSheet("background-color: #1e1e1e; color: #ddd; padding: 8px; border: 1px solid #444;")
+        
+        self.btn_out = QPushButton("Browse")
+        self.btn_out.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_out.setStyleSheet("background-color: #0d6efd; color: white; padding: 5px;")
+        self.btn_out.clicked.connect(self.browse_output)
+        
+        # Models
+        self.combo_task = QComboBox()
+        self.combo_task.addItems(["detect", "segment"])
+        self.combo_task.setStyleSheet("background-color: #1e1e1e; color: #fff; padding: 5px;")
+        self.combo_task.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.combo_task.currentTextChanged.connect(self.update_models)
         
         self.combo_model = QComboBox()
-        self.combo_model.addItems(["yolov8n.pt", "yolov8s.pt", "yolov8m.pt", "yolo11n.pt"])
         self.combo_model.setStyleSheet("background-color: #1e1e1e; color: #fff; padding: 5px;")
         self.combo_model.setCursor(Qt.CursorShape.PointingHandCursor)
-        form.addRow("Base Model:", self.combo_model)
+        self.update_models("detect") # Init
         
+        # Hyperparameters
         self.spin_epochs = QSpinBox()
         self.spin_epochs.setRange(1, 5000)
         self.spin_epochs.setValue(50)
         self.spin_epochs.setStyleSheet("background-color: #1e1e1e; color: #fff; padding: 5px;")
-        form.addRow("Epochs:", self.spin_epochs)
         
         self.spin_batch = QSpinBox()
         self.spin_batch.setRange(1, 128)
         self.spin_batch.setValue(16)
         self.spin_batch.setStyleSheet("background-color: #1e1e1e; color: #fff; padding: 5px;")
-        form.addRow("Batch Size:", self.spin_batch)
         
         self.spin_imgsz = QSpinBox()
         self.spin_imgsz.setRange(320, 1280)
         self.spin_imgsz.setValue(640)
         self.spin_imgsz.setSingleStep(32)
         self.spin_imgsz.setStyleSheet("background-color: #1e1e1e; color: #fff; padding: 5px;")
+        
+        # Add Rows
+        form.addRow("Dataset YAML:", self.horizontal(self.path_data, self.btn_data))
+        form.addRow("Output Folder:", self.horizontal(self.path_out, self.btn_out))
+        form.addRow("Task Type:", self.combo_task)
+        form.addRow("Base Model:", self.combo_model)
+        form.addRow("Epochs:", self.spin_epochs)
+        form.addRow("Batch Size:", self.spin_batch)
         form.addRow("Image Size:", self.spin_imgsz)
         
         grp_cfg.setLayout(form)
@@ -113,9 +138,22 @@ class TrainingWindow(QMainWindow):
         self.btn_train.clicked.connect(self.start_training)
         layout.addWidget(self.btn_train)
 
+    def horizontal(self, w1, w2):
+        w = QWidget(); l = QHBoxLayout(w); l.setContentsMargins(0,0,0,0)
+        l.addWidget(w1); l.addWidget(w2); return w
+
+    def update_models(self, task):
+        self.combo_model.clear()
+        suffix = "-seg.pt" if task == "segment" else ".pt"
+        self.combo_model.addItems([f"yolov8n{suffix}", f"yolov8s{suffix}", f"yolov8m{suffix}", f"yolo11n{suffix}"])
+
     def browse_yaml(self):
         f, _ = QFileDialog.getOpenFileName(self, "Select data.yaml", "", "YAML (*.yaml)")
         if f: self.path_data.setText(f)
+
+    def browse_output(self):
+        d = QFileDialog.getExistingDirectory(self, "Select Output Directory")
+        if d: self.path_out.setText(d)
 
     def log(self, msg):
         self.log_text.append(msg)
@@ -123,9 +161,17 @@ class TrainingWindow(QMainWindow):
 
     def start_training(self):
         yaml_path = self.path_data.text()
+        out_path = self.path_out.text()
+        
         if not os.path.exists(yaml_path):
             QMessageBox.warning(self, "Input Error", "Please select a valid data.yaml file first.")
             return
+        if not os.path.exists(out_path):
+            try:
+                os.makedirs(out_path)
+            except:
+                QMessageBox.warning(self, "Input Error", "Output directory could not be created.")
+                return
             
         # Configure Training
         cfg = {
@@ -134,9 +180,10 @@ class TrainingWindow(QMainWindow):
             'imgsz': self.spin_imgsz.value(),
             'batch': self.spin_batch.value(),
             'model_weights': self.combo_model.currentText(),
-            'project_dir': os.path.join(os.getcwd(), "YOLO_Training_Runs"),
+            'task': self.combo_task.currentText(),
+            'project_dir': out_path, # USER DEFINED PATH
             'run_name': 'train_run',
-            'device': 0 # Default to GPU 0
+            'device': 0
         }
         
         self.btn_train.setEnabled(False)
@@ -152,7 +199,7 @@ class TrainingWindow(QMainWindow):
     def on_finished(self):
         self.btn_train.setEnabled(True)
         self.btn_train.setText("START TRAINING")
-        QMessageBox.information(self, "Success", "Training Complete!\nCheck 'YOLO_Training_Runs' folder.")
+        QMessageBox.information(self, "Success", f"Training Complete!\nResults saved in:\n{self.path_out.text()}")
 
     def on_error(self, err):
         self.log(f"CRITICAL ERROR: {err}")
