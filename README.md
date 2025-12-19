@@ -1,4 +1,4 @@
-# AutoTrackSamYOLO
+# AutoTrackSAMYOLO
 ### Universal Object Tracking Pipeline: From Zero-Shot Annotation to YOLO Deployment
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -6,9 +6,9 @@
 ![Ultralytics](https://img.shields.io/badge/YOLO-v8%2Fv11-green)
 ![License](https://img.shields.io/badge/License-MIT-purple)
 
-**AutoTrackSamYOLO** is a powerful, GUI-based desktop application designed to automate the detection, tracking, and analysis of **any moving object** in video footage. 
+**AutoTrackSAMYOLO** is a powerful, GUI-based desktop application designed to automate the detection, tracking, and analysis of **any moving object** in video footage. 
 <p align="center">
-  <img src="https://github.com/yousaf2018/AutoTrackSamYOLO/blob/main/logo.png" alt="EthoGrid Logo" width="200">
+  <img src="https://github.com/yousaf2018/AutoTrackSAMYOLO/blob/main/logo.png" alt="EthoGrid Logo" width="200">
 </p>
 Whether you are tracking microscopic living organisms, nano-scale particles, or complex biological systems in dense marine environments, this platform is purpose-built to handle extreme occlusion and crowded visual scenes. Traditional computer-vision pipelines struggle with overlapping targets, rapid motion, and scale variation, but this system eliminates the classic "Cold Start" problem. By combining Meta’s Segment Anything Model 3 (SAM 3) with lightweight user interaction, it can rapidly generate precise labels and track targets without requiring thousands of manually drawn bounding boxes. This enables researchers to solve highly complex detection and tracking challenges in environments where conventional tools fail — from plankton-rich marine ecosystems to dense microbial cultures under the microscope.
 ****
@@ -30,7 +30,7 @@ Bridge the gap between raw footage and actionable insights.
 
 ```mermaid
 graph LR
-    A[Raw Video Input] --> B(AutoTrackSamYOLO);
+    A[Raw Video Input] --> B(AutoTrackSAMYOLO);
     B --> C{Hybrid SAM 3 Tracking};
     C --> D[Export CSV, Heatmaps & Plots];
     C --> E[Auto-Generate YOLO Dataset];
@@ -40,7 +40,7 @@ graph LR
 
 ```
 
-![Tool Overview](https://github.com/yousaf2018/AutoTrackSamYOLO/blob/main/GUI.png)
+![Tool Overview](https://github.com/yousaf2018/AutoTrackSAMYOLO/blob/main/GUI.png)
 *A snapshot of the AutoTrackSAMYOLO interface*
 ## 🌟 Key Features
 
@@ -72,10 +72,10 @@ graph LR
 
 ## 🔗 Integration with EthoGrid
 
-AutoTrackSamYOLO is the official training companion for EthoGrid.
+AutoTrackSAMYOLO is the official training companion for EthoGrid.
 
 - While SAM 3 is incredible for initial annotation and zero-shot tracking, it is computationally heavy for real-time applications. For analyzing hours of footage efficiently, a lightweight detector like YOLO is preferred.
-- Use AutoTrackSamYOLO to label a small subset of your videos and train a custom YOLO model.
+- Use AutoTrackSAMYOLO to label a small subset of your videos and train a custom YOLO model.
 - Load your trained .pt model into EthoGrid.
 - Perform in-depth, real-time behavioral analysis (velocity profiling, zone preference, interaction metrics, turning angles) on massive datasets with high efficiency.
 
@@ -89,8 +89,8 @@ AutoTrackSamYOLO is the official training companion for EthoGrid.
 
 1. **Clone the Repository:**
 ```bash
-git clone https://github.com/yourusername/AutoTrackSamYOLO.git
-cd AutoTrackSamYOLO
+git clone https://github.com/yourusername/AutoTrackSAMYOLO.git
+cd AutoTrackSAMYOLO
 ```
 2. **Install Dependencies:**
 ```bash
@@ -159,9 +159,9 @@ This application was developed in the **[Laboratory of Professor Chung-Der Hsiao
 
 ---
 ## 📜 Citation
-If you use **AutoTrackSamYOLO** in your work, please cite:
+If you use **AutoTrackSAMYOLO** in your work, please cite:
 
-> [Your Name/Organization]. (2025). AutoTrackSamYOLO: Universal Object Tracking and Dataset Generation Pipeline. GitHub Repository.
+> [Your Name/Organization]. (2025). AutoTrackSAMYOLO: Universal Object Tracking and Dataset Generation Pipeline. GitHub Repository.
 
 ---
 
