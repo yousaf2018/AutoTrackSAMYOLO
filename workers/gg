@@ -1,0 +1,47 @@
+graph TD
+    %% Define Styles
+    classDef input fill:#2d3436,stroke:#636e72,stroke-width:2px,color:white;
+    classDef sam fill:#0984e3,stroke:#74b9ff,stroke-width:2px,color:white;
+    classDef process fill:#6c5ce7,stroke:#a29bfe,stroke-width:2px,color:white;
+    classDef yolo fill:#d63031,stroke:#ff7675,stroke-width:2px,color:white;
+    classDef analysis fill:#00b894,stroke:#55efc4,stroke-width:2px,color:white;
+
+    %% Nodes
+    RawVideo(fa:fa-film 24-Hour Raw Footage<br>Crab Behavior) --> Splitter[fa:fa-scissors Video Splitter<br>Chunking Strategy];
+    
+    subgraph "Phase 1: Automated Annotation (The Teacher)"
+        Splitter -->|Select 5-min Sample| HumanInput[fa:fa-mouse-pointer Human Input<br>Draw 1 Box per Crab];
+        HumanInput --> SAM3{Meta SAM 3<br>Zero-Shot Tracker};
+        SAM3 -->|Propagate Masks| SamData[High-Precision Tracks<br>Segmentation Masks];
+    end
+
+    subgraph "Phase 2: Dataset Factory"
+        SamData --> AutoLabel[Auto-Labeler Module<br>Mask-to-BBox Conversion];
+        AutoLabel --> YOLODataset[(YOLO Dataset<br>Images + .txt Labels)];
+        YOLODataset -->|Auto-Split| Splits[Train / Val / Test];
+    end
+
+    subgraph "Phase 3: Model Optimization (The Student)"
+        Splits --> Trainer[YOLOv11 Trainer<br>Transfer Learning];
+        Trainer --> CustomModel(Custom CrabDetector.pt<br>Optimized Weights);
+    end
+
+    subgraph "Phase 4: High-Throughput Inference"
+        RawVideo -.->|Stream Full 24h Data| Inference{YOLOv11 Inference};
+        CustomModel --> Inference;
+        Inference -->|Real-Time Detection| Centroids[Extract Centroids<br>X, Y Coordinates];
+    end
+
+    subgraph "Phase 5: Ethometrics & Analysis"
+        Centroids --> Traj[Trajectory Mapping];
+        Centroids --> Kinematics[Velocity & Acceleration];
+        Kinematics --> Behavior[Fighting Detection<br>High-Velocity Interaction];
+        Behavior --> Heatmaps[Territorial Heatmaps];
+    end
+
+    %% Apply Styles
+    class RawVideo input;
+    class SAM3,SamData sam;
+    class Splitter,HumanInput,AutoLabel,Splits process;
+    class Trainer,CustomModel,Inference,YOLODataset yolo;
+    class Centroids,Traj,Kinematics,Behavior,Heatmaps analysis;

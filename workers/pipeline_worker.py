@@ -4,43 +4,17 @@ import traceback
 import sys
 import os
 
-# --- DUAL LOGGER CLASS ---
-class DualLogger:
-    """
-    Writes output to BOTH the GUI (via Signal) and a Text File (disk).
-    Uses .flush() to ensure logs are saved even if the app crashes.
-    """
-    def __init__(self, signal, file_path, is_terminal=False):
+class SignalStream:
+    """Redirects console output to a Qt signal."""
+    def __init__(self, signal):
         self.signal = signal
-        self.is_terminal = is_terminal
-        
-        # Open file in Append mode
-        self.file = open(file_path, 'a', encoding='utf-8')
 
     def write(self, text):
-        """Standard write for sys.stdout redirection."""
-        if not text: return
-        
-        # 1. Send to GUI
-        self.signal.emit(str(text))
-        
-        # 2. Write to File
-        try:
-            self.file.write(text)
-            self.file.flush() # Force save immediately
-        except: pass
-
-    def emit(self, text):
-        """Adapter for PyQt Signals (App Logs). Adds newline automatically."""
-        self.write(text + "\n")
+        if text:
+            self.signal.emit(str(text))
 
     def flush(self):
-        """Required for stream compatibility."""
-        self.file.flush()
-        os.fsync(self.file.fileno())
-
-    def close(self):
-        self.file.close()
+        pass
 
 class AnalysisWorker(QThread):
     # Signals
@@ -51,69 +25,64 @@ class AnalysisWorker(QThread):
     error_signal = pyqtSignal(str)
     finished_signal = pyqtSignal()
 
-    def __init__(self, input_videos, templates, output_dir, config):
+    # --- UPDATED CONSTRUCTOR: 3 ARGUMENTS ---
+    def __init__(self, tasks, output_dir, config):
+        """
+        :param tasks: List of tuples [(video_path, annotation_dict), ...]
+        :param output_dir: Directory to save results
+        :param config: Configuration dictionary
+        """
         super().__init__()
-        self.input_videos = input_videos
-        self.templates = templates 
+        self.tasks = tasks 
         self.output_dir = output_dir
         self.config = config
         self.is_running = True
-        
-        # Paths for log files
-        self.log_dir = os.path.join(output_dir, "logs")
-        if not os.path.exists(self.log_dir):
-            os.makedirs(self.log_dir)
+        self.pipeline = None
 
     def run(self):
-        # --- 1. SETUP LOGGERS ---
-        app_log_path = os.path.join(self.log_dir, "app_log.txt")
-        sys_log_path = os.path.join(self.log_dir, "system_log.txt")
-        
-        # Create Dual Loggers
-        self.app_logger = DualLogger(self.log_app_signal, app_log_path)
-        self.sys_logger = DualLogger(self.log_sys_signal, sys_log_path, is_terminal=True)
-
-        # Redirect System Console (SAM3 Output)
-        original_stdout = sys.stdout
-        original_stderr = sys.stderr
-        sys.stdout = self.sys_logger
-        sys.stderr = self.sys_logger
+        # Redirect Sys Output
+        orig_out = sys.stdout
+        orig_err = sys.stderr
+        stream = SignalStream(self.log_sys_signal)
+        sys.stdout = stream
+        sys.stderr = stream
 
         try:
-            # --- 2. LINK LOCAL SAM3 ---
+            # 1. Link SAM3
             sam_path = self.config.get("sam_path", "")
             if sam_path and os.path.exists(sam_path):
                 if sam_path not in sys.path:
                     sys.path.insert(0, sam_path)
-                    self.app_logger.emit(f"Linked Local SAM3: {sam_path}")
+                    self.log_app_signal.emit(f"Linked Local SAM3: {sam_path}")
 
-            # --- 3. IMPORT ENGINE ---
+            # 2. Import Engine
             from core.sam_logic import SAM3Pipeline
             
-            self.app_logger.emit("Initializing Pipeline...")
+            self.log_app_signal.emit("Initializing Pipeline...")
+            self.pipeline = SAM3Pipeline(self.output_dir, self.config, self.log_app_signal)
             
-            # Pass the APP LOGGER (which has .emit) to the pipeline
-            self.pipeline = SAM3Pipeline(self.output_dir, self.config, self.app_logger)
-            
-            # --- 4. LOAD MODEL ---
+            # 3. Load Model
             self.pipeline.load_model()
             
-            total_videos = len(self.input_videos)
+            total_videos = len(self.tasks)
             start_time = time.time()
-
-            # --- 5. EXTRACT TEMPLATES ---
-            if self.input_videos:
-                self.pipeline.extract_templates_from_rects(self.input_videos[0], self.templates)
             
-            # --- 6. PROCESSING LOOP ---
-            for i, video_path in enumerate(self.input_videos):
+            # 4. Processing Loop
+            for i, (video_path, ann_dict) in enumerate(self.tasks):
                 if not self.is_running: break
                 
                 video_name = os.path.basename(video_path)
-                self.app_logger.emit(f"Processing Video [{i+1}/{total_videos}]: {video_name}")
+                self.log_app_signal.emit(f"Processing Video [{i+1}/{total_videos}]: {video_name}")
                 
+                # Pre-load templates for this specific video
+                if ann_dict:
+                    self.pipeline.extract_templates_from_rects(video_path, ann_dict)
+                else:
+                    self.log_app_signal.emit("No manual templates. Running auto-scan if enabled.")
+                
+                # Progress Callback
                 def update_progress(step, total, msg, curr_batch=0, tot_batch=0):
-                    # Calculate progress
+                    # Calculate overall progress
                     video_chunk = 100.0 / total_videos
                     base_progress = i * video_chunk
                     current_progress = (step / total) * video_chunk
@@ -121,7 +90,7 @@ class AnalysisWorker(QThread):
                     
                     self.progress_signal.emit(overall_progress, msg)
                     
-                    # Calculate Stats
+                    # Stats Calculation
                     elapsed = time.time() - start_time
                     time_str = "--:--"
                     if overall_progress > 0:
@@ -131,35 +100,36 @@ class AnalysisWorker(QThread):
                             time_str = f"{int(rem // 60)}m {int(rem % 60)}s"
                     
                     # Chunk Info string
-                    chunk_str = msg.split('(')[0].strip() if "Chunk" in msg else "Init"
+                    chunk_str = msg.split('(')[0].strip() if "Chunk" in msg else "-"
                     batch_str = f"{curr_batch}/{tot_batch}" if tot_batch > 0 else "-"
 
+                    # Emit Stats
                     self.stats_signal.emit({
                         "fps": f"{self.pipeline.current_fps:.1f}",
                         "time_left": time_str,
                         "objects": str(self.pipeline.active_objects),
                         "chunk": chunk_str,
-                        "batch": batch_str
+                        "batch": batch_str 
                     })
 
                 self.pipeline.process_video(video_path, progress_callback=update_progress)
             
-            self.app_logger.emit("Batch Analysis Complete.")
+            self.log_app_signal.emit("Batch Analysis Complete.")
             self.finished_signal.emit()
 
         except Exception as e:
-            # Log error to file as well
-            traceback.print_exc() 
+            traceback.print_exc()
             self.error_signal.emit(str(e))
         
         finally:
-            # --- RESTORE CONSOLE & CLOSE FILES ---
-            sys.stdout = original_stdout
-            sys.stderr = original_stderr
-            if hasattr(self, 'app_logger'): self.app_logger.close()
-            if hasattr(self, 'sys_logger'): self.sys_logger.close()
+            # Clean up
+            if self.pipeline:
+                self.pipeline.cleanup()
+            # Restore console
+            sys.stdout = orig_out
+            sys.stderr = orig_err
 
     def stop(self):
         self.is_running = False
-        if hasattr(self, 'pipeline'):
+        if hasattr(self, 'pipeline') and self.pipeline:
             self.pipeline.stop_flag = True
