@@ -40,7 +40,7 @@ graph LR
 
 ```
 
-![Tool Overview](https://github.com/yousaf2018/AutoTrackSAMYOLO/blob/main/GUI.png)
+![Tool Overview](https://github.com/yousaf2018/AutoTrackSAMYOLO/blob/main/APP-GUI.png)
 *A snapshot of the AutoTrackSAMYOLO interface*
 ## 🌟 Key Features
 
