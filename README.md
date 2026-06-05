@@ -157,12 +157,6 @@ This application was developed in the **[Laboratory of Professor Chung-Der Hsiao
   </a>
 </p>
 
----
-## 📜 Citation
-If you use **AutoTrackSAMYOLO** in your work, please cite:
 
-> [Your Name/Organization]. (2025). AutoTrackSAMYOLO: Universal Object Tracking and Dataset Generation Pipeline. GitHub Repository.
-
----
 
 *Democratizing AI-powered computer vision for researchers, engineers, and analysts.*
